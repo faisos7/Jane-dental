@@ -1,0 +1,101 @@
+# 1. 먼저 이 라이브러리를 설치해야 합니다. (터미널에 입력: pip install python-pptx)
+from pptx import Presentation
+from pptx.util import Inches, Pt
+from pptx.enum.text import PP_ALIGN
+import os
+
+def create_presentation():
+    # PPT 생성
+    prs = Presentation()
+
+    # 슬라이드 데이터 정의 (제목, 내용, 실제 파일명 매칭)
+    slides_data = [
+        {
+            "title": "재니 치아 교정 정밀 진단 보고서",
+            "content": "작성일: 2025년 12월 9일\n작성자: 아빠\n\n[주요 진단 내용]\n1. 비염 (구강호흡)\n2. 아래턱이 작은 골격\n3. 턱관절 마모 소견\n4. 좁은 턱과 공간 부족",
+            "images": []  # 표지에는 이미지 없음
+        },
+        {
+            "title": "1. 가장 시급한 문제: '비염' (숨길이 막힘)",
+            "content": "■ 코 안쪽이 하얗게 꽉 차 있음 (비강 폐쇄)\n■ 입으로 숨을 쉬어 턱 성장 방해 및 얼굴 비대칭 유발\n■ 결론: 교정보다 비염 치료가 최우선 과제",
+            "images": ["KakaoTalk_20251209_201846763_08.jpg"]
+        },
+        {
+            "title": "2. 골격 정밀 분석: '무턱' 경향",
+            "content": "■ 데이터 분석 결과(빨간 그래프): 위턱은 정상이나 아래턱이 작음\n■ 입이 튀어나와 보이는 건 입술이 아닌 아래턱이 뒤로 밀려 있기 때문",
+            "images": ["KakaoTalk_20251209_201846763_06.jpg", "KakaoTalk_20251209_201846763_09.jpg"]
+        },
+        {
+            "title": "3. 턱관절(TMJ) 건강 상태: '주의 필요'",
+            "content": "■ 턱관절 머리(과두)가 동그랗지 않고 평평하게 마모됨 (퇴행성 소견)\n■ 무리한 교정보다는 턱관절에 무리가 가지 않는 조심스러운 접근 필요",
+            "images": ["KakaoTalk_20251209_201846763_11.jpg", "KakaoTalk_20251209_201846763_26.jpg"]
+        },
+        {
+            "title": "4. 주의사항: 꼬불꼬불한 치아 뿌리",
+            "content": "■ 앞니 뿌리가 짧고 휘어 있음\n■ 교정 중 치아 이동 시 뿌리가 짧아질 위험이 있어 주기적 관찰 필수",
+            "images": ["KakaoTalk_20251209_201846763_10.jpg"]
+        },
+        {
+            "title": "5. 현재 치아 상태: 공간 부족 & 과개교합",
+            "content": "■ 턱 공간 부족으로 치아가 삐뚤빼뚤함 (좁은 구두에 낀 발)\n■ 윗니가 아랫니를 너무 깊게 덮고 있음 (과개교합)",
+            "images": ["KakaoTalk_20251209_201846763_02.jpg", "KakaoTalk_20251209_201846763_16.jpg"]
+        },
+        {
+            "title": "6. 해결책: 비발치 확장 장치 (MSE)",
+            "content": "■ 이를 뽑지 않고 입천장 뼈 자체를 넓히는 장치 사용\n■ 효과: 치아 배열 공간 확보 + 비강(숨길) 확장으로 비염 개선 기대",
+            "images": ["KakaoTalk_20251209_201846763_04.jpg", "KakaoTalk_20251209_201846763_05.jpg"]
+        },
+        {
+            "title": "7. 치료 목표 시뮬레이션 (Before & After)",
+            "content": "■ 좁고 찌그러진 치열 → 넓고 완만한 U자 형태로 개선\n■ 정상적인 교합 회복 예측",
+            "images": ["KakaoTalk_20251209_201846763_22.jpg", "KakaoTalk_20251209_201846763_24.jpg"]
+        }
+    ]
+
+    # 슬라이드 생성 루프
+    for slide_info in slides_data:
+        # 제목+내용 레이아웃 사용 (1번 인덱스)
+        slide_layout = prs.slide_layouts[1]
+        slide = prs.slides.add_slide(slide_layout)
+
+        # 1. 제목 설정
+        title = slide.shapes.title
+        title.text = slide_info["title"]
+
+        # 2. 본문 내용 설정
+        body_shape = slide.shapes.placeholders[1]
+        tf = body_shape.text_frame
+        tf.text = slide_info["content"]
+        
+        # 폰트 사이즈 조정 (선택사항)
+        for paragraph in tf.paragraphs:
+            paragraph.font.size = Pt(18)
+            paragraph.space_after = Pt(10)
+
+        # 3. 이미지 배치 로직
+        images = slide_info["images"]
+        if images:
+            # 이미지 갯수에 따라 배치 간격 조정
+            img_count = len(images)
+            
+            # 기본 위치 설정 (슬라이드 하단부에 배치)
+            start_left = Inches(0.5)
+            top = Inches(3.5)
+            height = Inches(3.5) # 이미지 높이 고정
+            
+            for idx, img_name in enumerate(images):
+                # 파일이 실제로 존재하는지 확인 (에러 방지)
+                if os.path.exists(img_name):
+                    # 이미지를 나란히 배치
+                    left = start_left + (idx * Inches(4.5))
+                    slide.shapes.add_picture(img_name, left, top, height=height)
+                else:
+                    print(f"경고: '{img_name}' 파일을 찾을 수 없습니다. 해당 이미지는 건너뜁니다.")
+
+    # 저장
+    save_name = 'Jaeni_Report.pptx'
+    prs.save(save_name)
+    print(f"성공! '{save_name}' 파일이 생성되었습니다.")
+
+if __name__ == "__main__":
+    create_presentation()
